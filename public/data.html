@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Submitted Fault Data</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- --new-- -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /> 
+    
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>Theft/Damage Ticket Reports</h1>
+  <div class="search-container">  
+    <input type="text" id="searchInput" placeholder="Enter referenceId/Siteid to search">
+    <button onclick="searchByID()">
+      <i class="fas fa-search"></i> <!-- Font Awesome search icon -->
+    </button>
+  </div>
+  
+  <!-- <div class="search-container">  
+    <input type="text" id="searchInput" placeholder="Enter referenceId to search">
+    <button onclick="searchByID()">Search</button>
+  </div> -->
+
+  <table id="dataTable" border="1" style="width: 150%; border-collapse: collapse;">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="downloadExcel()">Download Excel</button>
+
+  <script>
+    const table = document.getElementById("dataTable");
+    const thead = table.querySelector("thead");
+    const tbody = table.querySelector("tbody");
+  
+    // Fetch and render all faults on page load
+    //Uses fetch("/api/faults") to load all entries.
+    window.onload = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/api/faults");
+        const data = await res.json();
+        renderTable(data);
+        localStorage.setItem("TheftData", JSON.stringify(data)); // Save for Excel export
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        alert("Unable to load data.");
+      }
+    };
+  
+  function renderTable(data) {
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  if (data.length > 0) {
+    const headers = Object.keys(data[0]).filter(key => key !== "_id" && key !== "__v" && key !== "incidentPhoto1");
+
+    if (!headers.includes("referenceId")) {
+      headers.unshift("referenceId");
+    }
+
+    const headerRow = document.createElement("tr");
+
+    headers.forEach(header => {
+      const th = document.createElement("th");
+      const capitalizedHeader = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1').toLowerCase();
+      th.textContent = capitalizedHeader;
+      headerRow.appendChild(th);
+    });
+
+    const actionTh = document.createElement("th");
+    actionTh.textContent = "Actions";
+    headerRow.appendChild(actionTh);
+    thead.appendChild(headerRow);
+
+    const dateFields = ["incidentOccuranceDate", "incidentReportingDate", "targetDate", "closerDate"];
+
+    data.forEach(entry => {
+      const row = document.createElement("tr");
+
+      headers.forEach(key => {
+        const td = document.createElement("td");
+
+        if (dateFields.includes(key) && entry[key]) {
+          const date = new Date(entry[key]);
+          const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+          td.textContent = formattedDate;
+        } else if (key === "incidentPhoto" && entry[key]) {
+          const container = document.createElement("div");
+
+          // incidentPhoto
+          const img1 = document.createElement("img");
+          img1.src = `/uploads/${entry[key]}`;
+          img1.alt = "Incident Photo";
+          img1.style.width = "100px";
+          img1.style.height = "auto";
+          container.appendChild(img1);
+          
+
+          // incidentPhoto1
+          if (entry.incidentPhoto1) {
+            const br = document.createElement("br");
+            container.appendChild(br);
+
+            const img2 = document.createElement("img");
+            img2.src = `C:/Users/PDL10056/Desktop/duplica_editing/server/uploads/${entry["incidentPhoto1"]}`;
+            img2.alt = "Incident Photo 1";
+            img2.style.width = "100px";
+            img2.style.height = "auto";
+            container.appendChild(img2);
+          }
+
+          td.appendChild(container);
+        } else {
+          td.textContent = entry[key] || "";
+        }
+
+        row.appendChild(td);
+      });
+
+      // Add the Edit, Delete, and Download buttons
+      const actionTd = document.createElement("td");
+
+      const editBtn = document.createElement("button");
+      // editBtn.textContent = "Edit";
+      editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';  //new
+      editBtn.onclick = () => {
+        window.location.href =`index.html?referenceId=${entry.referenceId}`;
+      };
+
+      const deleteBtn = document.createElement("button");
+      // deleteBtn.textContent = "Delete";
+      deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete';  //new
+      deleteBtn.onclick = () => deleteFault(entry.referenceId);
+
+      const downloadBtn = document.createElement("button");
+      // downloadBtn.textContent = "Download PDF";
+      downloadBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF';  //new
+      downloadBtn.onclick = () => downloadPDF(entry);
+
+      actionTd.appendChild(editBtn);
+      actionTd.appendChild(deleteBtn);
+      actionTd.appendChild(downloadBtn);
+      row.appendChild(actionTd);
+
+      tbody.appendChild(row);
+    });
+  } else {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 100;
+    cell.textContent = "No records found.";
+    row.appendChild(cell);
+    tbody.appendChild(row);
+  }
+}
+
+async function downloadPDF(entry) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Convert your data to key-value rows
+  const tableBody = [
+    ["Siteid", entry.siteid || "N/A"],
+    ["Circle", entry.circle || "N/A"],
+    ["District", entry.district || "N/A"],
+    ["Village Name", entry.villageName || "N/A"],
+    ["Technician Name", entry.technicianName || "N/A"],
+    ["Technician Number", entry.technicianNumber || "N/A"],
+    ["Incident Occurrence Date", entry.incidentOccuranceDate || "N/A"],
+    ["Incident Reporting Date", entry.incidentReportingDate || "N/A"],
+    ["Approximate Loss Amount", entry.apporximateLossAmount || "N/A"],
+    ["Incident Reported By", entry.incidentReportedBy || "N/A"],
+    ["Insurance Applicable", entry.insuranceApplicable || "N/A"],
+    ["Mobile Number Of Incident Reported By", entry.mobileNumberOfIncidentReportedBy || "N/A"],
+    ["Lost Items", entry.lostItems || "N/A"],
+    ["Loss Description", entry.lossDescription || "N/A"],
+    ["Reference ID", entry.referenceId || "N/A"],
+    ["Responsibility", entry.responsibility || "N/A"],
+    ["Target Date", entry.targetDate || "N/A"],
+    ["Closure Date", entry.closureDate || "N/A"],
+    ["Action Taken", entry.actionTaken || "N/A"],
+    ["Closure Status", entry.closureStatus || "N/A"],
+    ["Reason for Loss", entry.reasonForLoss || "N/A"]
+  ];
+
+  // Add table to PDF
+  // doc.setFontSize(14);
+  // doc.text("Incident Report Summary", 14, 10); 
+const pageWidth = doc.internal.pageSize.getWidth(); // Get the page width
+const title = "Incident Report Summary";
+
+doc.setFontSize(14);
+
+// Calculate x-position to center the text
+const textWidth = doc.getTextWidth(title);
+const centerX = (pageWidth - textWidth) / 2;
+
+doc.text(title, centerX, 10); // y = 10 for vertical position
+
+
+  // doc.autoTable({
+  //   // head: [["Field", "Value"]],
+  //   body: tableBody,
+  //   startY: 10,
+  //   styles: { fontSize: 10, cellPadding: 2 },
+  //   alternateRowStyles: { fillColor: [245, 245, 245] },
+  //   headStyles: { fillColor: [60, 60, 60], textColor: 255 },
+  // });
+  doc.autoTable({
+  body: tableBody,
+  startY: 20,
+  margin: { top: 10, bottom: 10 },
+  styles: {
+    fontSize: 8,
+    cellPadding: 2,
+    textColor: 0,
+    fillColor: false,
+    lineWidth: 0.1,
+    lineColor: 0
+  },
+  headStyles: {
+    fontStyle: 'bold',
+    textColor: 0,
+    fillColor: false
+  },
+  alternateRowStyles: {
+    fillColor: false
+  },
+  pageBreak: 'avoid'
+});
+
+
+  const finalY = doc.lastAutoTable.finalY || 10;
+
+  // Add image if exists
+  
+  if (entry.incidentPhoto) {
+    const imgPath = `http://localhost:3001/uploads/${entry.incidentPhoto}`;
+    try {
+      const image = await toDataURL(imgPath);
+      doc.addImage(image, 'JPEG', 10, finalY + 10, 60, 80); // Width, height adjusted 
+    } catch (error) {
+      console.error("Error loading image:", error);
+    }
+  }
+  if (entry.incidentPhoto1) {
+    const imgPath = `http://localhost:3001/uploads/${entry.incidentPhoto1}`;
+    try {
+      const image = await toDataURL(imgPath);
+      doc.addImage(image, 'JPEG', 80, finalY + 10, 60, 80); // Width, height adjusted
+    } catch (error) {
+      console.error("Error loading image:", error);
+    }
+  }
+
+  doc.save(`Record_${entry.referenceId}.pdf`);
+}
+
+// Convert image URL to base64 for jsPDF
+//Images are loaded as base64 using toDataURL().
+function toDataURL(url) {
+  return fetch(url)
+    .then(response => response.blob())
+    .then(blob => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    }));
+}
+
+
+
+async function deleteFault(referenceId) {
+      if (!confirm(`Are you sure you want to delete theft with ID "${referenceId}"?`)) return;
+
+      try {
+        const res = await fetch(`http://localhost:3001/api/faults/${referenceId}`, {
+          method: "DELETE"
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Deletion failed");
+        }
+
+        alert(`Theft with ID ${referenceId} deleted successfully.`);
+      
+
+       // Refresh the table
+        const updatedData = await fetch("http://localhost:3001/api/faults").then(r => r.json());
+        renderTable(updatedData);
+        localStorage.setItem("faultData", JSON.stringify(updatedData));
+      } catch (error) {
+        console.error("Delete error:", error);
+        alert("Error deleting theft: " + error.message);
+      }
+    }
+
+    function downloadExcel() {
+  // Get the data from localStorage
+  const data = JSON.parse(localStorage.getItem("faultData") || "[]");
+
+  // Remove the 'incidentPhoto' property from each record in the data
+  const filteredData = data.map(record => {
+    const { incidentPhoto, incidentPhoto1, ...rest } = record;
+return rest;
+  });
+
+  // Convert the filtered data to a worksheet
+  const worksheet = XLSX.utils.json_to_sheet(filteredData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "FaultData");
+
+  // Write the file
+  XLSX.writeFile(workbook, "FaultData.xlsx");
+}
+
+//Fetches a specific record by ID (/api/faults/:id) and re-renders the table with just that record.
+async function searchByID() {
+      const searchValue = document.getElementById("searchInput").value.trim();
+      if (!searchValue) return alert("Please enter a Reference ID.");
+  
+      try {
+        const res = await fetch(`http://localhost:3001/api/faults/${searchValue}`);
+        if (!res.ok) {
+          return alert("No theft found with reference ID: " + searchValue);
+        }
+        const result = await res.json();
+        renderTable([result]); // Display only the matched record
+      } catch (error) {
+        console.error("Search error:", error);
+        alert("Failed to search. Please try again.");
+      }
+    }
+
+  </script>
+</body>
+</html>

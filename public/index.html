@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BSNL-4G Sites Table Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* Style each form section */
+.form-section {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 20px 0;
+  background-color: #fdfdfd;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover effect on form section */
+.form-section:hover {
+  background-color: #c9e3fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the section titles */
+.form-section h2 {
+  font-size: 1.4em;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Style the label and input */
+.form-section label {
+  font-weight: 500;
+  color: #444;
+  display: block;
+  margin-top: 10px;
+}
+
+/* Style the file input */
+.form-section input[type="file"] {
+  margin-top: 8px;
+  font-size: 1em;
+  padding: 4px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Optional: subtle hover on input */
+.form-section input[type="file"]:hover {
+  background-color: #eef5ff;
+}
+
+  </style>
+  
+  <script>
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey && e.keyCode === 85) || // Ctrl+U
+          (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
+          (e.keyCode === 123)) { // F12
+        e.preventDefault();
+      }
+    });
+  </script>
+  
+
+</head>
+<body>
+  <h1 class="main-heading">Theft/Damage Ticket Form</h1>
+  <img src="../project/logo.jpg" alt="Logo" class="logo-img">
+
+  <form id="faultForm">
+    <!-- 🔝 Top Section -->
+    <section class="form-section">
+      <h2>Incident Description</h2>
+      <label>Site ID: <input type="text" name="siteid" required /></label>
+      <label>Circle: <input type="text" name="circle" required /></label>
+      <label>District: <input type="text" name="district" required /></label>
+      <label>Village Name: <input type="text" name="villageName" required /></label>
+      <label>Technician Name: <input type="text" name="technicianName" required /></label>
+      <label>Technician Number: <input type="text" name="technicianNumber" required /></label>
+      <label>Incident Occurance Date: <input type="date" name="incidentOccuranceDate" required /></label>
+      <label>Incident Reporting Date: <input type="date" name="incidentReportingDate" required /></label>
+      <label>Apporximate loss amount: <input type="text" name="apporximateLossAmount" required /></label>
+      <label>Incident Reported by: <input type="text" name="incidentReportedBy" required /></label>
+      <label>Mobile Number Of Incident Reported By: <input type="text" name="mobileNumberOfIncidentReportedBy" required /></label>
+      <label>Insurance Applicable:
+        <select name="insuranceApplicable" required>
+          <option value="">Select</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </label>
+      <!-- <label>Mobile Number Of Incident Reported By: <input type="text" name="mobileNumberOfIncidentReportedBy" required /></label> -->
+      <label>Lost Items: <input type="text" name="lostItems" required /></label>
+      <label>Loss Description: <textarea name="lossDescription" required></textarea></label>
+      <button type="button" onclick="generateReferenceId()">Generate Fault Ticket</button>
+      <p><strong>Reference ID:</strong> <span id="refIdDisplay">Not Generated</span></p>
+    </section>
+
+    <!--  Middle Section -->
+    <section class="form-section" id="actionPlan">
+      <h2>Action Plan</h2>
+      <label>Responsibility: <input type="text" name="responsibility"  /></label>
+      <label>Target Date: <input type="date" name="targetDate"  /></label>
+    </section>
+
+    <!-- 🔻 Lower Section -->
+    <section class="form-section" id="closureDetails">
+      <h2>Closure Details</h2>
+      <label>Closure Date: <input type="date" name="closureDate" /></label>
+      <label>Action Taken: <textarea name="actionTaken"></textarea></label>
+      <!-- <label>Closure Status: <textarea name="closureStatus"></textarea></label> -->
+      <label>Closure Status:
+        <select name="closureStatus">
+          <option value="">Select</option>
+          <option>Open</option>
+          <option>Close</option>
+          <!-- <option>Rejected</option> -->
+        </select>
+      </label>
+      <label>Reason for Loss:
+        <select name="reasonForLoss">
+          <option value="">Select</option>
+          <option>Theft</option>
+          <option>Damage</option>
+          <!-- <option>Rejected</option> -->
+        </select>
+      </label>
+    </section>
+    <section class="form-section">
+      <h2>Add Photo1</h2>
+      <label>Upload Image (JPG/PNG):
+        <input type="file" name="incidentPhoto" accept="image/*" required />
+      </label>
+    </section>
+   
+    <section class="form-section">
+      <h2>Add Photo2</h2>
+      <label>Upload Image (JPG/PNG):
+        <input type="file" name="incidentPhoto1" accept="image/*" required />
+      </label>
+    </section>
+    <!-- <label>Closure Date: <input type="date" name="closerDate" /></label>
+    <label>Closure Status: <select name="closureStatus" > ... </select></label> -->
+
+    
+    <input type="hidden" name="referenceId" id="referenceId" />
+
+    <button type="submit">Submit</button>
+    <button type="button" onclick="window.location.href='data.html'">View Data</button>
+  </form>
+
+  <script src="script.js"></script>
+</body>
+</html>
