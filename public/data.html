@@ -110,7 +110,7 @@
             container.appendChild(br);
 
             const img2 = document.createElement("img");
-            img2.src = `C:/Users/PDL10056/Desktop/duplica_editing/server/uploads/${entry["incidentPhoto1"]}`;
+            img2.src = `/uploads/${entry["incidentPhoto1"]}`;
             img2.alt = "Incident Photo 1";
             img2.style.width = "100px";
             img2.style.height = "auto";
@@ -243,7 +243,7 @@ doc.text(title, centerX, 10); // y = 10 for vertical position
   // Add image if exists
   
   if (entry.incidentPhoto) {
-    const imgPath = `http://localhost:3001/uploads/${entry.incidentPhoto}`;
+    const imgPath = `/uploads/${entry.incidentPhoto}`;
     try {
       const image = await toDataURL(imgPath);
       doc.addImage(image, 'JPEG', 10, finalY + 10, 60, 80); // Width, height adjusted 
@@ -252,7 +252,7 @@ doc.text(title, centerX, 10); // y = 10 for vertical position
     }
   }
   if (entry.incidentPhoto1) {
-    const imgPath = `http://localhost:3001/uploads/${entry.incidentPhoto1}`;
+    const imgPath = `/uploads/${entry.incidentPhoto1}`;
     try {
       const image = await toDataURL(imgPath);
       doc.addImage(image, 'JPEG', 80, finalY + 10, 60, 80); // Width, height adjusted
