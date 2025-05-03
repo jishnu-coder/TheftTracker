@@ -15,7 +15,7 @@ window.onload = async () => {
 
   if (referenceId) {
     try {
-      const res = await fetch(`http://localhost:3001/api/faults/${referenceId}`);
+      const res = await fetch(`/api/faults/${referenceId}`);
       if (!res.ok) throw new Error("No theft found.");
       const data = await res.json();
       fillFormWithData(data);
@@ -72,7 +72,7 @@ function fillFormWithData(data) {
 // displays the new referenceId and stores it in hodden field
 async function generateReferenceId() {
   try {
-    const res = await fetch("http://localhost:3001/api/generate-id");
+    const res = await fetch("/api/generate-id");
     const data = await res.json();
     const refId = data.referenceId;
     document.getElementById("refIdDisplay").textContent = refId;
@@ -119,8 +119,8 @@ formData1.append('image1', entry.incidentPhoto1); // Second photo
 
   const isEdit = new URLSearchParams(window.location.search).get("referenceId");
   const url = isEdit
-    ? `http://localhost:3001/api/faults/${entry.referenceId}`
-    : `http://localhost:3001/api/faults`;
+    ? `/api/faults/${entry.referenceId}`
+    : `/api/faults`;
   const method = isEdit ? "PUT" : "POST";
   // entry.incidentPhoto=entry.incidentPhoto.name;
   try {

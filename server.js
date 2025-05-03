@@ -16,7 +16,7 @@ if (!fs.existsSync(uploadPath)) {
 }
 
 // MongoDB connection (use local or remote as needed)
-mongoose.connect("mongodb+srv://admin:passworD@cluster0.8i8l0t0.mongodb.net/", {
+mongoose.connect("mongodb+srv://admin:passworD@cluster0.8i8l0t0.mongodb.net/theftTracker", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
