@@ -45,7 +45,7 @@
     //Uses fetch("/api/faults") to load all entries.
     window.onload = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/faults");
+        const res = await fetch("/api/faults");
         const data = await res.json();
         renderTable(data);
         localStorage.setItem("TheftData", JSON.stringify(data)); // Save for Excel export
@@ -283,7 +283,7 @@ async function deleteFault(referenceId) {
       if (!confirm(`Are you sure you want to delete theft with ID "${referenceId}"?`)) return;
 
       try {
-        const res = await fetch(`http://localhost:3001/api/faults/${referenceId}`, {
+        const res = await fetch(`/api/faults/${referenceId}`, {
           method: "DELETE"
         });
 
@@ -296,7 +296,7 @@ async function deleteFault(referenceId) {
       
 
        // Refresh the table
-        const updatedData = await fetch("http://localhost:3001/api/faults").then(r => r.json());
+        const updatedData = await fetch("/api/faults").then(r => r.json());
         renderTable(updatedData);
         localStorage.setItem("faultData", JSON.stringify(updatedData));
       } catch (error) {
@@ -330,7 +330,7 @@ async function searchByID() {
       if (!searchValue) return alert("Please enter a Reference ID.");
   
       try {
-        const res = await fetch(`http://localhost:3001/api/faults/${searchValue}`);
+        const res = await fetch(`/api/faults/${searchValue}`);
         if (!res.ok) {
           return alert("No theft found with reference ID: " + searchValue);
         }
